@@ -1,0 +1,121 @@
+#include <iostream>
+using namespace std;
+#include <string>
+#include <cstring> 
+#include <math.h> 
+#define pi 3.14159265
+
+
+long long convertion(int m, string a){
+	long long num=0;
+    for(int i=0;i<a.length();i++){                  //转换为10进制 
+        if(a[i]>='a'&&a[i]<='f'){
+            num+=(a[i]-'a'+10)*pow(m,a.length()-1-i);   
+        }
+        else if(a[i]>='A'&&a[i]<='F'){
+            num+=(a[i]-'A'+10)*pow(m,a.length()-1-i);
+        }
+        else
+            num+=(a[i]-'0')*pow(m,a.length()-1-i);
+    }
+    return num; 
+}
+
+void arithmetic(double num1, double num2, char c){    //四则运算 
+	
+	double result;
+	switch(c){
+		case '+':   result=num1+num2;
+		            break;
+		case '-':   result=num1-num2;
+		            break; 
+		case '*':   result=num1*num2;
+		            break;
+		case '/':   result=(num1*1.0)/num2;
+		            break;
+	}
+} 
+
+
+
+void trigonometric(double num, char c){      //三角函数运算 
+	double s;
+	s=n*pi/180;
+	double result;
+	switch(c){
+		case 's': result=sin(s);
+		          break;
+		case 'c': result=cos(s);
+		          break;
+		case 't': result=tan(s);
+		          break;
+	}
+}
+
+void compare(double num1, double num2){    //比较 
+	if(num1>num2)
+	if(num1=num2)
+	if(num1<num2)
+}
+
+int commondivisor(int num1, int num2){    //最大公约数 
+	int temp;  
+    if(num1<num2){  
+        temp=num1;  
+        num1=num2;  
+        num2=temp;  
+    }  
+    while(temp){  
+        temp=num1%num2;
+		num1=num2;  
+        num2=temp;  
+    }  
+    return num2;
+} 
+
+int lcm(int num1, int num2){    //最小公倍数
+    int temp;  
+    if(num1<num2){  
+        temp=num1;  
+        num1=num2;  
+        num2=temp;  
+    }
+	for(int i=0;i<=a*b;i++){
+		if(i%a==0 && i%b==0)
+		return i;
+	}  
+}
+
+double linear(double a, double b, double x){   //一元一次函数
+     double y;
+     y=a*x+b;
+     return y;
+}
+
+double quadratic(double a, double b, double c, double x){   //一元二次函数 
+	double y;
+	y=a*x*x+b*x+c;
+	return y;
+}
+
+double logarithmic(double m, double n){    //对数函数 
+	double y;
+	y=log(n)/log(m);//以num1为底的对数 
+	return y;
+}
+
+double exponentiation(double num1, double num2){     //幂函数、指数函数 
+	double y;
+	y=pow(num1,num2);     //result=num1^num2
+	return y;
+} 
+
+double inverse(double x, double k){   //反比例函数 
+	double y;
+	y=k/x;
+	return y;
+} 
+
+int main(){
+       
+}
