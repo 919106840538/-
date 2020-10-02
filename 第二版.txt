@@ -1,0 +1,402 @@
+#include <iostream>
+using namespace std;
+#include <string>
+#include <cstring> 
+#include <cmath> 
+#include <iomanip>
+#include <stack> 
+#include <queue> 
+#define pi 3.14159265
+
+/*转换为10进制*/ 
+long long convertion(int m, string a){            
+	long long num=0;
+    for(int i=0;i<a.length();i++){                  
+        if(a[i]>='a'&&a[i]<='f'){
+            num+=(a[i]-'a'+10)*pow(m,a.length()-1-i);   
+        }
+        else if(a[i]>='A'&&a[i]<='F'){
+            num+=(a[i]-'A'+10)*pow(m,a.length()-1-i);
+        }
+        else
+            num+=(a[i]-'0')*pow(m,a.length()-1-i);
+    }
+    return num; 
+}
+/*四则运算操作*/ 
+stack<char> a;     //操作符栈
+stack<double> b;   //操作数栈
+char _operator[10] = "+-*/()=."; 
+bool in_put(char c){               //判断输入的操作符
+	for (int i=0;i<8;i++){
+		if (c==_operator[i])
+			return true;
+	}
+	return false;
+}	
+bool check_input(string &equation){	//用于检查是否有非法字符
+	string s;
+	for (int i=0;i<equation.length();i++) {
+		if (in_put(equation[i])||isdigit(equation[i]))    //isdigit()检查其参数是否为十进制数字字符
+			s+=equation[i]; 
+		else{
+			cout<<"The enter is Wrong"<<endl;
+			return false;
+		}
+	}
+	equation=s;
+	return true;
+}
+int level(char c){//为每一个操作符返回一个数，数代表了优先级
+	switch(c){
+	case '(':	return 0;
+	case '+':
+	case '-':	return 1;
+	case '*':
+	case '/':	return 2;
+	case ')':	return 3;
+	}
+}																							
+bool change(string &s1, string &s2){     //将中缀表达式转换成后缀表达式
+	int num=0;
+	int state=0;                 //表示在数字中的状态,0为在数字外，1为在数字内 
+	char c;
+	for (int i=0;i<s1.length();i++){
+		c=s1[i];
+		if (isdigit(c)){
+			s2=s2+c;
+			num*=10;
+			num+=c-'0';
+			state=1; //状态改为在数字内
+		}
+		else{
+			if(state==1&&c=='.'){
+				s2=s2+'.';
+				num=0;
+				continue;
+			}
+			if(state==1&&c!='.'){
+				s2+=' ';
+				num=0;
+			}
+			if (c=='=')
+				break;
+			else if(c == '(')
+				a.push(c);
+			else if(c == ')') {
+				while(!a.empty()&&a.top()!='(') {
+					s2+=a.top();
+					s2+=' ';
+					a.pop();
+				}
+				a.pop();
+			}
+			else {
+				while(true){
+					if(a.empty()||a.top() == '(')
+						a.push(c);
+					else if(level(c)>level(a.top()))
+						a.push(c);
+					else{
+						s2+=a.top();
+						s2+=' ';
+						a.pop();
+						continue;
+					}
+					break;
+				}
+			}
+			state=0; //状态为在数字外
+		}
+	}
+	while(!a.empty()){
+		s2+=a.top();
+		s2+=' ';
+		a.pop();
+	}
+	return true;
+}							
+bool compute(string &equation){     //计算后缀表达式
+	int num=0; //暂存数字
+	int state=0;//初始状态为在数字外
+	char c;
+	bool decimals=false;
+	double count=1.0;
+	for (int i=0;i<equation.length();i++){
+		c=equation[i];
+		if(isdigit(c)||c=='.') {
+			if(isdigit(c)){
+				num*=10;
+				num+=c-'0';
+				state=1; //状态为在数字内
+				if(decimals==true)
+					count*=10.0;
+			}
+			if (c=='.') {
+				decimals=true;
+				continue;
+			}
+		}
+		else{
+			decimals=false;
+			double result=num/count;
+			count=1.0;			
+			if(state==1){
+				b.push(result);
+				num=0;
+			}
+			double x,y;
+			if (c!=' ') {
+				x=b.top();
+				b.pop();
+				y=b.top();
+				b.pop();
+				switch(c){
+				case '+':  b.push(x+y); 
+				           break;
+				case '-':  b.push(y-x); 
+				           break;
+				case '*':  b.push(x*y); 
+				           break;
+				case '/':  b.push(y/x); 
+			               break;
+				default:   cout << "未知的错误!" << endl;
+				}
+			}
+			state=0;
+		}
+	}
+	return true;
+}
+string to_string(int num){             //把数字转换成字符串
+	if(num==0)
+		return string("0");
+	bool neg=false;
+	if (num<0){
+		neg=true;
+		num=-num;
+	}
+	string res;
+	while(num!= 0){
+		char c=(num%10)+'0';
+		res=c+res;
+		num/=10;
+	}
+	if (neg)
+		res='-'+res;
+	return res;
+}
+void arithmetic(){    //进行四则运算 
+	while(true){
+	    //输入表达式	
+		string exp1;
+		int n;
+		cout<<"---四则运算"<<endl;		
+		cout<<"---输入2进行二进制四则运算\n---输入10进行十进制四则运算\n---输入16进行十六进制四则运算\n---输入0以结束使用"<<endl;
+		cin>>n;
+		if(n==0){   //判断是否要退出
+			cout<<"感谢您的使用..." << endl;
+			break;
+		}
+		cout<<"---乘除写在括号加减前 例:1+2*(1+2)\n---不要忘记输入“=”"<<endl; 
+ 		cout<<"---请输入表达式:"<<endl;		
+		cin>>exp1;				
+		cin.clear();
+		cin.sync();
+		string s;
+	    string exp2;
+	    s.clear();
+		exp2.clear();
+		if(n==2){
+	        for(int i=0;i<exp1.length();i++){
+		        if(!in_put(exp1[i])){
+			        s=s+exp1[i];	
+		        }
+		        else if(in_put(exp1[i])&&!in_put(exp1[i+1])){
+			        long long num=convertion(2,s);
+		        	s.clear();
+			        exp2=exp2+to_string(num);
+			        exp2=exp2+exp1[i];			
+		        }
+				else if(in_put(exp1[i])&&in_put(exp1[i+1])){
+					long long num=convertion(2,s);
+		        	s.clear();
+			        exp2=exp2+to_string(num);
+			        exp2=exp2+exp1[i]+exp1[i+1];
+			        i++;
+				}				    
+	        }
+		}	
+		if(n==10){
+		  	for(int i=0;i<exp1.length();i++){
+		        if(!in_put(exp1[i])){
+			        s=s+exp1[i];	
+		        }
+		        else if(in_put(exp1[i])&&!in_put(exp1[i+1])){
+			        long long num=convertion(10,s);
+		        	s.clear();
+			        exp2=exp2+to_string(num);
+			        exp2=exp2+exp1[i];			
+		        }
+				else if(in_put(exp1[i])&&in_put(exp1[i+1])){
+					long long num=convertion(10,s);
+		        	s.clear();
+			        exp2=exp2+to_string(num);
+			        exp2=exp2+exp1[i]+exp1[i+1];
+			        i++;
+				}				    
+	        }
+		}
+		if(n==16){
+	        for(int i=0;i<exp1.length();i++){
+		        if(!in_put(exp1[i])){
+			        s=s+exp1[i];	
+		        }
+		        else if(in_put(exp1[i])&&!in_put(exp1[i+1])){
+			        long long num=convertion(16,s);
+		        	s.clear();
+			        exp2=exp2+to_string(num);
+			        exp2=exp2+exp1[i];			
+		        }
+				else if(in_put(exp1[i])&&in_put(exp1[i+1])){
+					long long num=convertion(16,s);
+		        	s.clear();
+			        exp2=exp2+to_string(num);
+			        exp2=exp2+exp1[i]+exp1[i+1];
+			        i++;
+				}				    
+	        }
+		}
+		while (!a.empty()) {    //清空栈 
+			a.pop();
+		}
+		while (!b.empty()) {
+			b.pop();
+		}
+		check_input(exp1);//去除非法字符 
+		string exp3;
+		exp3.clear();
+		change(exp2,exp3);	//转换为后缀表达式
+		compute(exp3);    //计算后缀表达式
+		double result=b.top();
+		cout<<"结果为:"<<(double)result<<endl;		
+    }
+}
+/*三角函数运算*/
+void trigonometric(){       
+	while(true){	
+	    cout<<"---三角函数运算"<<endl;
+	    string s;
+	    cout<<"---输入quit以结束使用\n---输入需要计算的三角函数: "<<endl;
+	    cin>>s;
+	    if(s==string("quit")){
+	    	cout<<"感谢您的使用..." << endl;
+			break;
+		}
+		string _num;
+		_num.clear();	         
+		for(int i=0;i<s.length();i++){
+		    if(isdigit(s[i]))
+		    _num=_num+s[i];
+	    }
+	    int num=0;
+	    for(int i=0;i<_num.length();i++){
+	    	num*=10;
+			num+=_num[i]-'0';
+		}
+	    double ans;
+	    ans=num*pi/180;
+	    switch(s[0]){
+		    case 's': cout<<sin(ans)<<endl;
+		              break;
+		    case 'c': cout<<cos(ans)<<endl;
+		              break;
+		    case 't': cout<<tan(ans)<<endl;
+		              break;
+	    }
+	}
+}
+/*比较*/ 
+void compare(double num1, double num2){     
+	if(num1>num2);
+	if(num1=num2);
+	if(num1<num2);
+}
+ /*最大公约数*/ 
+int commondivisor(int num1, int num2){   
+	int temp;  
+    if(num1<num2){  
+        temp=num1;  
+        num1=num2;  
+        num2=temp;  
+    }  
+    while(temp){  
+        temp=num1%num2;
+		num1=num2;  
+        num2=temp;  
+    }  
+    return num2;
+} 
+/*最小公倍数*/ 
+int lcm(int num1, int num2){    
+    int temp;  
+    if(num1<num2){  
+        temp=num1;  
+        num1=num2;  
+        num2=temp;  
+    }
+	for(int i=0;i<=num1*num2;i++){
+		if(i%num1==0 && i%num2==0)
+		return i;
+	}  
+}
+/*一元一次函数*/ 
+double linear(double a, double b, double x){   
+     double y;
+     y=a*x+b;
+     return y;
+}
+/*一元二次函数*/ 
+double quadratic(double a, double b, double c, double x){   
+	double y;
+	y=a*x*x+b*x+c;
+	return y;
+}
+/*对数函数*/
+double logarithmic(double m, double n){     
+	double y;
+	y=log(n)/log(m);//以num1为底的对数 
+	return y;
+}
+/*幂函数、指数函数*/
+double exponentiation(double num1, double num2){      
+	double y;
+	y=pow(num1,num2);     //result=num1^num2
+	return y;
+} 
+/*反比例函数*/
+double inverse(double x, double k){    
+	double y;
+	y=k/x;
+	return y;
+} 
+
+int main(){
+      arithmetic();
+	  //trigonometric();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
