@@ -1,0 +1,701 @@
+#include <iostream>
+using namespace std;
+#include <string>
+#include <cstring> 
+#include <cmath> 
+#include <iomanip>
+#include <stack> 
+#include <queue> 
+#define pi 3.14159265
+
+/*转换为10进制*/ 
+long long convertion(int m, string a){            
+	long long num=0;
+    for(int i=0;i<a.length();i++){                  
+        if(a[i]>='a'&&a[i]<='f'){
+            num+=(a[i]-'a'+10)*pow(m,a.length()-1-i);   
+        }
+        else if(a[i]>='A'&&a[i]<='F'){
+            num+=(a[i]-'A'+10)*pow(m,a.length()-1-i);
+        }
+        else
+            num+=(a[i]-'0')*pow(m,a.length()-1-i);
+    }
+    return num; 
+}
+/*四则运算*/ 
+stack<char> a;     //操作符栈
+stack<double> b;   //操作数栈
+char _operator[10] = "+-*/()=."; 
+bool in_put(char c){              
+	for (int i=0;i<8;i++){                  /*判断输入的操作符*/
+		if (c==_operator[i])
+			return true;
+	}
+	return false;
+}	
+bool check_input(string &equation){	
+	string s;                              /*用于检查是否有非法字符*/
+	for (int i=0;i<equation.length();i++) {
+		if (in_put(equation[i])||isdigit(equation[i]))    //isdigit()检查其参数是否为十进制数字字符
+			s+=equation[i]; 
+		else{
+			cout<<"输入有误，请重新输入"<<endl;
+			return false;
+		}
+	}
+	equation=s;
+	return true;
+}
+int level(char c){
+	switch(c){                     /*为每一个操作符返回一个数，数代表了优先级*/
+	case '(':	return 0;
+	case '+':
+	case '-':	return 1;
+	case '*':
+	case '/':	return 2;
+	case ')':	return 3;
+	}
+}																							
+bool change(string &s1, string &s2){     
+	int num=0;                           /*将中缀表达式转换成后缀表达式*/
+	int state=0;                 //表示在数字中的状态,0为在数字外，1为在数字内 
+	char c;
+	for (int i=0;i<s1.length();i++){
+		c=s1[i];
+		if (isdigit(c)){
+			s2=s2+c;
+			num*=10;
+			num+=c-'0';
+			state=1; //状态改为在数字内
+		}
+		else{
+			if(state==1&&c=='.'){
+				s2=s2+'.';
+				num=0;
+				continue;
+			}
+			if(state==1&&c!='.'){
+				s2+=' ';
+				num=0;
+			}
+			if (c=='=')
+				break;
+			else if(c == '(')
+				a.push(c);
+			else if(c == ')') {
+				while(!a.empty()&&a.top()!='(') {
+					s2+=a.top();
+					s2+=' ';
+					a.pop();
+				}
+				a.pop();
+			}
+			else {
+				while(true){
+					if(a.empty()||a.top() == '(')
+						a.push(c);
+					else if(level(c)>level(a.top()))
+						a.push(c);
+					else{
+						s2+=a.top();
+						s2+=' ';
+						a.pop();
+						continue;
+					}
+					break;
+				}
+			}
+			state=0; //状态为在数字外
+		}
+	}
+	while(!a.empty()){
+		s2+=a.top();
+		s2+=' ';
+		a.pop();
+	}
+	return true;
+}							
+bool compute(string &equation){     
+	int num=0; //暂存数字             /*计算后缀表达式*/
+	int state=0;//初始状态为在数字外
+	char c;
+	bool decimals=false;
+	double count=1.0;
+	for (int i=0;i<equation.length();i++){
+		c=equation[i];
+		if(isdigit(c)||c=='.') {
+			if(isdigit(c)){
+				num*=10;
+				num+=c-'0';
+				state=1; //状态为在数字内
+				if(decimals==true)
+					count*=10.0;
+			}
+			if (c=='.') {
+				decimals=true;
+				continue;
+			}
+		}
+		else{
+			decimals=false;
+			double result=num/count;
+			count=1.0;			
+			if(state==1){
+				b.push(result);
+				num=0;
+			}
+			double x,y;
+			if (c!=' ') {
+				x=b.top();
+				b.pop();
+				y=b.top();
+				b.pop();
+				switch(c){
+				case '+':  b.push(x+y); 
+				           break;
+				case '-':  b.push(y-x); 
+				           break;
+				case '*':  b.push(x*y); 
+				           break;
+				case '/':  b.push(y/x); 
+			               break;
+				default:   cout << "未知的错误!" << endl;
+				}
+			}
+			state=0;
+		}
+	}
+	return true;
+}
+string to_string(int num){             
+	if(num==0)                      /*把数字转换成字符串*/
+		return string("0");
+	bool neg=false;
+	if (num<0){
+		neg=true;
+		num=-num;
+	}
+	string res;
+	while(num!= 0){
+		char c=(num%10)+'0';
+		res=c+res;
+		num/=10;
+	}
+	if (neg)
+		res='-'+res;
+	return res;
+}
+void arithmetic(){    
+	while(true){               /*进行四则运算*/
+	    //输入表达式	
+		string exp1;
+		int n;
+		cout<<"---四则运算"<<endl;
+		cout<<"---注意：二进制与十六进制不支持小数运算"<<endl;		
+		cout<<"---输入2进行二进制四则运算\n---输入10进行十进制四则运算\n---输入16进行十六进制四则运算\n---输入0以结束使用"<<endl;
+		cin>>n;
+		if(n==0){   //判断是否要退出
+			cout<<endl;
+			break;
+		}
+		cout<<"---乘除写在括号加减前 例:1+2*(1+2)\n---注意：“()”为英文字符；不要忘记输入“=”"<<endl; 
+ 		cout<<"---请输入表达式:"<<endl;		
+		cin>>exp1;				
+		cin.clear();
+		cin.sync();
+		string s;
+	    string exp2;
+	    s.clear();
+		exp2.clear();
+		if(n==2){
+	        for(int i=0;i<exp1.length();i++){
+		        if(!in_put(exp1[i])){
+			        s=s+exp1[i];	
+		        }
+		        else if(in_put(exp1[i])&&!in_put(exp1[i+1])){
+			        long long num=convertion(2,s);
+		        	s.clear();
+			        exp2=exp2+to_string(num);
+			        exp2=exp2+exp1[i];			
+		        }
+				else if(in_put(exp1[i])&&in_put(exp1[i+1])){
+					long long num=convertion(2,s);
+		        	s.clear();
+			        exp2=exp2+to_string(num);
+			        exp2=exp2+exp1[i]+exp1[i+1];
+			        i++;
+				}				    
+	        }
+		}	
+		if(n==10){
+		  	for(int i=0;i<exp1.length();i++){
+		        if(!in_put(exp1[i])){
+			        s=s+exp1[i];	
+		        }
+		        else if(in_put(exp1[i])&&!in_put(exp1[i+1])){
+			        long long num=convertion(10,s);
+		        	s.clear();
+			        exp2=exp2+to_string(num);
+			        exp2=exp2+exp1[i];			
+		        }
+				else if(in_put(exp1[i])&&in_put(exp1[i+1])){
+					long long num=convertion(10,s);
+		        	s.clear();
+			        exp2=exp2+to_string(num);
+			        exp2=exp2+exp1[i]+exp1[i+1];
+			        i++;
+				}				    
+	        }
+		}
+		if(n==16){
+	        for(int i=0;i<exp1.length();i++){
+		        if(!in_put(exp1[i])){
+			        s=s+exp1[i];	
+		        }
+		        else if(in_put(exp1[i])&&!in_put(exp1[i+1])){
+			        long long num=convertion(16,s);
+		        	s.clear();
+			        exp2=exp2+to_string(num);
+			        exp2=exp2+exp1[i];			
+		        }
+				else if(in_put(exp1[i])&&in_put(exp1[i+1])){
+					long long num=convertion(16,s);
+		        	s.clear();
+			        exp2=exp2+to_string(num);
+			        exp2=exp2+exp1[i]+exp1[i+1];
+			        i++;
+				}				    
+	        }
+		}
+		while (!a.empty()) {    //清空栈 
+			a.pop();
+		}
+		while (!b.empty()) {
+			b.pop();
+		}
+		check_input(exp1);//去除非法字符 
+		string exp3;
+		exp3.clear();
+		change(exp2,exp3);	//转换为后缀表达式
+		compute(exp3);    //计算后缀表达式
+		double result=b.top();
+		cout<<"结果为(十进制):"<<(double)result<<endl<<endl;		
+    }
+}
+/*三角函数运算*/
+void trigonometric(){       
+	while(true){	
+	    cout<<"---三角函数运算"<<endl;
+	    cout<<"---可计算sin() cos() tan() arcsin() arccos() arctan()"<<endl;
+	    string s;
+	    cout<<"---输入quit以结束使用\n---输入需要计算的三角函数: "<<endl;
+	    cin>>s;
+	    if(s==string("quit")){
+	    	cout<<endl;
+			break;
+		}
+		string _num;
+		_num.clear();
+		bool decimals=false; 	         
+		for(int i=0;i<s.length();i++){
+		    if(isdigit(s[i]))
+		       _num=_num+s[i];
+		    if(s[i]=='.'){
+		       _num=_num+s[i];	
+			   decimals=true;
+			}		     
+	    }
+	    double num=0;
+	    if(!decimals){
+	    	for(int i=0;i<_num.length();i++){
+	    	    num*=10;
+			    num+=_num[i]-'0';
+		    }
+		}
+	    else{
+	    	int n=0;
+	    	double num1=0;
+	    	for(int i=0;i<_num.length();i++)
+	    		if(_num[i]=='.')
+	    		   	n=i;
+			for(int i=0;i<_num.length();i++){
+				if(i<n){
+					num*=10;
+					num+=_num[i]-'0';
+				}
+				if(i>n){
+					num1*=10;
+					num1+=_num[i]-'0';
+				}
+			}
+			double num2=pow(10,_num.length()-n-1);	
+			num+=num1/num2;
+		}
+		for(int i=0;i<s.length();i++)
+			if(s[i]=='-')
+			  num=-num;	
+		double ans;
+	    ans=num*pi/180;
+	    switch(s[0]){
+		    case 's': cout<<"结果为："<<sin(ans)<<endl;
+		              break;
+		    case 'c': cout<<"结果为："<<cos(ans)<<endl;
+		              break;
+		    case 't': cout<<"结果为："<<tan(ans)<<endl;
+		              break;
+		    case 'a':{
+		    	       switch(s[3]){
+		    	           case 's':  cout<<"结果为："<<asin(num)<<"rad"<<endl;
+		                              break;
+			               case 'c':  cout<<"结果为："<<acos(num)<<"rad"<<endl;
+		                              break;
+			               case 't':  cout<<"结果为："<<atan(num)<<"rad"<<endl;
+		                              break;	
+					   }
+				       break;
+			        }				      						      
+	    }
+	    cout<<endl;
+	}
+}
+/*对数运算*/
+double logarithmic1(double m, double n){     
+	double y;
+	y=log(n)/log(m);//以m为底的对数 
+	return y;
+}
+void logarithmic2(){
+	while(true){
+		cout<<"---对数运算"<<endl;		
+		cout<<"---输入“0 0”以退出"<<endl;
+        double n1,m1;
+	    cout<<"---输入需要计算的对数1的底和真数: "<<endl;
+	    cin>>n1>>m1;
+	    if(n1==0&&m1==0){
+	    	cout<<endl;
+			break;
+		}
+		if(n1==1){
+	    	cout<<"底不能为1,请重新输入"<<endl;
+	    	continue;
+		}
+	    double n2,m2;
+		cout<<"---输入需要计算的对数2的底和真数: "<<endl;
+	    cin>>n2>>m2; 
+	    if(n2==1){
+	    	cout<<"底不能为1,请重新输入"<<endl;
+	    	continue;
+		}	      
+		char c;	     
+	    cout<<"---输入要进行的运算符号“+-*/”： "; 
+	    cin>>c;	    
+		switch(c){
+			case '+':  cout<<"log"<<n1<<"("<<m1<<")"<<c<<"log"<<n2<<"("<<m2<<")"<<"="<<logarithmic1(n1,m1)+logarithmic1(n2,m2)<<endl;
+			           break;
+			case '-':  cout<<"log"<<n1<<"("<<m1<<")"<<c<<"log"<<n2<<"("<<m2<<")"<<"="<<logarithmic1(n1,m1)-logarithmic1(n2,m2)<<endl;
+			           break;
+			case '*':  cout<<"log"<<n1<<"("<<m1<<")"<<c<<"log"<<n2<<"("<<m2<<")"<<"="<<logarithmic1(n1,m1)*logarithmic1(n2,m2)<<endl;
+			           break;
+			case '/':  cout<<"log"<<n1<<"("<<m1<<")"<<c<<"log"<<n2<<"("<<m2<<")"<<"="<<logarithmic1(n1,m1)/logarithmic1(n2,m2)<<endl;
+			           break;
+		}
+		cout<<endl; 
+	}
+}
+/*幂运算*/
+double exponentiation1(double num1, double num2){      
+	double y;
+	y=pow(num1,num2);     //y=num1^num2
+	return y;
+}  
+void exponentiation2(){
+    while(true){
+		cout<<"---幂运算"<<endl;
+		cout<<"---输入“0 0”以结束使用"<<endl;		
+        double n1,m1;
+	    cout<<"---输入需要计算的幂1的底和指数: "<<endl;
+	    cin>>n1>>m1;
+		if(n1==0&&m1==0){
+	    	cout<<endl;
+			break;
+		}	    
+	    double n2,m2;
+		cout<<"---输入需要计算的幂2的底和指数: "<<endl;
+	    cin>>n2>>m2; 	      
+		char c;	     
+	    cout<<"---输入要进行的运算符号“+-*/”： "; 
+	    cin>>c;	    
+		switch(c){
+			case '+':  cout<<n1<<"^"<<m1<<c<<n2<<"^"<<m2<<"="<<exponentiation1(n1,m1)+exponentiation1(n2,m2)<<endl;
+			           break;
+			case '-':  cout<<n1<<"^"<<m1<<c<<n2<<"^"<<m2<<"="<<exponentiation1(n1,m1)-exponentiation1(n2,m2)<<endl;
+			           break;
+			case '*':  cout<<n1<<"^"<<m1<<c<<n2<<"^"<<m2<<"="<<exponentiation1(n1,m1)*exponentiation1(n2,m2)<<endl;
+			           break;
+			case '/':  cout<<n1<<"^"<<m1<<c<<n2<<"^"<<m2<<"="<<exponentiation1(n1,m1)/exponentiation1(n2,m2)<<endl;
+			           break;
+		}
+		cout<<endl;
+	}	
+}   
+/*比较*/ 
+void compare(){     
+	while(true){
+		cout<<"---比较运算"<<endl;
+		cout<<"---支持任意两个进制数字之间比较运算"<<endl;
+		cout<<"---输入“0 0”以结束使用"<<endl;
+		int n1;
+		string num1;
+		cout<<"---输入第一个数的进制及其数值："<<endl;
+		cout<<"num1: ";
+		cin>>n1>>num1;
+		if(n1==0&&num1=="0"){
+	    	cout<<endl;
+			break;
+		}
+		int n2;
+		string num2;
+		cout<<"---输入第二个数的进制及其数值："<<endl;
+		cout<<"num2: ";
+		cin>>n2>>num2;
+		if(convertion(n1,num1)<convertion(n2,num2))
+		    cout<<"num1<num2"<<endl<<endl;
+		if(convertion(n1,num1)>convertion(n2,num2))
+		    cout<<"num1>num2"<<endl<<endl;
+		if(convertion(n1,num1)==convertion(n2,num2))
+		    cout<<"num1=num2"<<endl<<endl;
+	} 
+}
+/*最大公约数*/ 
+void commondivisor(){   
+	while(true){
+	    cout<<"---最大公约数"<<endl;
+	    cout<<"---支持任意两个进制数字之间求公约数"<<endl;
+	    cout<<"---输入“0 0”以结束使用"<<endl;
+		int n1;
+		string _num1;
+		cout<<"---输入第一个数的进制及其数值："<<endl;
+		cout<<"num1: ";
+		cin>>n1>>_num1;
+		if(n1==0&&_num1=="0"){
+	    	cout<<endl;
+			break;
+		}
+		int n2;
+		string _num2;
+		cout<<"---输入第二个数的进制及其数值："<<endl;
+		cout<<"num2: ";
+		cin>>n2>>_num2;
+		int num1=convertion(n1,_num1);
+		int num2=convertion(n2,_num2);
+	    int temp;  
+        if(num1<num2){  
+            temp=num1;  
+            num1=num2;  
+            num2=temp;  
+        }  
+        int i;
+        for(i=num2;i>0;i--)
+        	if(num1%i==0&&num2%i==0)
+        	   break;		
+        cout<<"最大公约数为(十进制)："<<i<<endl<<endl;	
+	}	
+} 
+/*最小公倍数*/ 
+void lcm(){    
+    while(true){
+		cout<<"---最小公倍数"<<endl;
+	    cout<<"---支持任意两个进制数字之间求最小公倍数"<<endl;
+	    cout<<"---输入“0 0”以结束使用"<<endl;
+		int n1;
+		string _num1;
+		cout<<"---输入第一个数的进制及其数值："<<endl;
+		cout<<"num1: ";
+		cin>>n1>>_num1;
+		if(n1==0&&_num1=="0"){
+	    	cout<<endl;
+			break;
+		}
+		int n2;
+		string _num2;
+		cout<<"---输入第二个数的进制及其数值："<<endl;
+		cout<<"num2: ";
+		cin>>n2>>_num2;
+		int num1=convertion(n1,_num1);
+		int num2=convertion(n2,_num2); 
+	    int temp;  
+        if(num1<num2){  
+            temp=num1;  
+            num1=num2;  
+            num2=temp;  
+        }
+        int i; 
+    	for(i=num1;i<=num1*num2;i++)
+		    if(i%num1==0&&i%num2==0)
+		        break;
+		cout<<"最小公倍数为(十进制)："<<i<<endl<<endl;	     
+	} 
+}
+/*一元一次函数*/ 
+void linear(){   
+     while(true){
+	     cout<<"---一元一次函数 y = a * x + b"<<endl;        
+	     double a, b, x;    
+         cout<<"---输入“0 0 0”以结束使用"<<endl;     
+         cout<<"---输入a b x的值："<<endl;
+         cin>>a>>b>>x;
+         if(a==0&&b==0&&x==0){
+             cout<<endl;
+		     break;	
+	     }
+	     cout<<" y = "<<(double)a*x+b<<endl<<endl; 
+	 } 	    
+}
+/*一元二次函数*/ 
+void quadratic(){   
+	while(true){
+	     cout<<"---一元二次函数 y = a * x * x + b * x + c"<<endl;        
+	     double a, b, c, x;    
+         cout<<"---输入“0 0 0 0”以结束使用"<<endl;     
+         cout<<"---输入a b c x的值："<<endl;
+         cin>>a>>b>>c>>x;
+         if(a==0&&b==0&&c==0&&x==0){
+             cout<<endl;
+		     break;	
+	     }
+	     cout<<" y = "<<(double)a*x*x+b*x+c<<endl<<endl; 
+	 } 
+}
+/*对数函数*/
+void logarithmic3(){ 
+    while(true){
+	     cout<<"---对数函数 y = logm(x) "<<endl;
+		 cout<<"---以m为底x为真数的对数"<<endl;        
+	     double m, x;    
+         cout<<"---输入“0 0”以结束使用"<<endl;     
+         cout<<"---输入m x的值："<<endl;
+         cin>>m>>x;
+         if(m==0&&x==0){
+             cout<<endl;
+		     break;	
+	     }
+	     if(m==1){
+	     	cout<<"底数不能为1，请重新输入"<<endl<<endl;
+	     	continue;
+		 }
+	     cout<<" y = "<<(double)log(x)/log(m)<<endl<<endl; 
+	 }     
+}
+/*指数函数*/
+void exponentiation(){      
+	while(true){
+		 cout<<endl;
+	     cout<<"---指数函数 y = a ^ x "<<endl;        
+	     double a, x;    
+         cout<<"---输入“0 0”以结束使用"<<endl;     
+         cout<<"---输入a x的值："<<endl; 
+         cin>>a>>x;
+         if(a==0&&x==0){
+             cout<<endl;
+		     break;	
+	     }
+	     cout<<" y = "<<pow(a,x)<<endl; 
+	 } 
+} 
+/*幂函数*/
+void exponentiation4(){      
+	while(true){
+		 cout<<endl;
+	     cout<<"---幂函数 y = x ^ a "<<endl;        
+	     double a, x;    
+         cout<<"---输入“0 0”以结束使用"<<endl;     
+         cout<<"---输入a x的值："<<endl; 
+         cin>>a>>x;
+         if(a==0&&x==0){
+             cout<<endl;
+		     break;	
+	     }
+	     cout<<" y = "<<pow(x,a)<<endl; 
+	 } 
+}  
+/*反比例函数*/
+void inverse(){    
+	while(true){
+	     cout<<"---反比例函数 y = k/x "<<endl;        
+	     double k, x;    
+         cout<<"---输入“0 0”以结束使用"<<endl;     
+         cout<<"---输入k x的值："<<endl; 
+         cin>>k>>x;
+         if(k==0&&x==0){
+             cout<<endl;
+		     break;	
+	     }
+	     if(x==0){
+	     	cout<<"分母不能为0，请重新输入"<<endl<<endl;
+	     	continue;
+		 }
+	     cout<<" y = "<<(double)k/x<<endl<<endl; 
+	 } 
+} 
+
+int main(){
+	  int n;
+      while(true){
+      	  cout<<"---欢迎使用计算器"<<endl;
+      	  cout<<"---请选择需要的功能"<<endl;
+      	  cout<<"---  1 四则运算"<<endl;
+		  cout<<"---  2 三角函数运算  3 对数运算       4 幂运算"<<endl;
+		  cout<<"---  5 比较运算      6 最大公约数     7 最小公倍数"<<endl;  
+		  cout<<"---  8 一元一次函数  9 一元二次函数  10 对数函数  "<<endl;   
+		  cout<<"--- 11 指数函数     12 幂函数        13 反比例函数"<<endl; 
+		  cout<<"---  0 结束使用计算器"<<endl;  
+		  cin>>n;  
+      	  switch(n){
+      		 case 1:  arithmetic();           //四则运算
+			          break;         
+	         case 2:  trigonometric();        //三角函数 
+	                  break;
+			 case 3:  logarithmic2();         //对数运算 
+			          break;
+	         case 4:  exponentiation2();      //幂运算 
+	                  break;
+	         case 5:  compare();              //比较运算 
+	                  break;
+	         case 6:  commondivisor();        //最大公约数 
+	                  break;
+	         case 7:  lcm();                  //最小公倍数 
+	                  break;
+	         case 8:  linear();               //一元一次函数 
+	                  break;
+	         case 9:  quadratic();            //一元二次函数 
+	                  break;
+	         case 10: logarithmic3();         //对数函数 
+	                  break;
+	         case 11: exponentiation();       //指数函数 
+	                  break;
+	         case 12: exponentiation4();      //幂函数
+	                  break;
+	         case 13: inverse();              //反比例函数 
+	                  break;
+	         case 0:  cout<<"感谢您的使用..."<<endl;
+			          break; 
+		  }
+		  if(n==0)  break;
+	  }	  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
