@@ -1,0 +1,619 @@
+#include <iostream> 
+using namespace std;
+#include <string>
+#include <cstring>
+#include <stdio.h>
+#include <iomanip>
+#include <stdlib.h>
+#include <time.h>
+#include <algorithm>
+#include <conio.h>
+#define Max 5000
+/*管理员*/
+class admin{
+	private:
+        string admin_id;           //工号
+        string name;               //姓名
+        string pwd;                //密码
+        string phone;              //手机号
+    public:
+    	string getname(){ return name;	}   	
+    	void setAdmin_id() { cin>>admin_id; }
+		void setName() { cin>>name; }
+		void setPwd() { cin>>pwd; }
+		void setPhone() { cin>>phone; }
+		bool isAdmin_id(string s){
+			if(admin_id==s) 
+			    return true;
+			else
+			    return false;
+		}
+		bool isPwd(string s){
+			if(pwd==s) 
+			    return true;
+			else
+			    return false;
+		}
+} Admin[10];
+/*日期*/ 
+class Date{
+	private:
+        int year, month, day;
+    public:
+		/*Date(){
+			time_t ltime=time(NULL);
+			tm * today=localtime(&ltime);
+			year=today->tm_year+1900;
+			month=today->tm_mon+1;
+			day=today->tm_mday;
+		}*/
+		void setDate(){
+			cin>>year>>month>>day;
+		}
+		void setYear() { cin>>year; }
+		void setMonth() { cin>>month; }
+		void setDay() { cin>>day; }
+		int getYear() { return year; }
+		int getMonth() { return month; }
+		int getDay() { return day; }
+};
+/*商品入库*/ 
+class in_goods{    
+	private:
+        int    goods_id;           //货号
+        string name;               //货物名称
+        int    In_num;           //入库数量
+        Date   In_date;            //入库日期
+        string unit;               //计量单位
+        double P_price;            //进货单价
+	public:	
+		void   setGoods_id() { cin>>goods_id; }
+		void   setName() { cin>>name; }
+		void   setIn_num() { cin>>In_num; }
+		void   setIn_date() { In_date.setDate(); }
+		void   setUnit() { cin>>unit; }
+		void   setP_price() { cin>>P_price; }
+ 		int    getGoods_id() { return goods_id; }
+		string getName() { return name; }
+		int    getIn_num() { return In_num; }
+		int    getIn_date_year() { return In_date.getYear(); }
+		int    getIn_date_month() { return In_date.getMonth(); }
+		int    getIn_date_day() { return In_date.getDay(); }
+		string getUnit() { return unit; }
+		double getP_price() { return P_price; }	                   
+}in_Goods;
+/*商品出库*/ 
+class out_goods{	
+	private:
+        int    goods_id;            //货号
+        string name;                //货物名称
+        int    Out_num;             //出库数量
+        Date   Out_date;            //出库日期
+        double S_price;             //出货单价
+    public:
+    	void   setGoods_id() { cin>>goods_id; }
+		void   setName() { cin>>name; }
+		void   setOut_num() { cin>>Out_num; }
+		void   setOut_date() { Out_date.setDate(); }
+		void   setS_price() { cin>>S_price; }
+ 		int    getGoods_id() { return goods_id; }
+		string getName() { return name; }
+		int    getOut_num() { return Out_num; }
+		int    getOut_date_year() { return Out_date.getYear(); }
+		int    getOut_date_month() { return Out_date.getMonth(); }
+		int    getOut_date_day() { return Out_date.getDay(); }
+		double getS_price() { return S_price; } 	
+}out_Goods;
+/*货物汇总*/
+class goods{
+    private:   	
+	    int    goods_id=0;          //货号
+        string name;                //商品名称
+        double S_price;             //售货单价
+        int total_num=0;            //该货物总数
+        int sales_volume=0;         //销量
+        string unit;                //计量单位 
+    public:
+		static int total;		//仓库中存的货物总数    	
+    	void   setGoods_id(int n) { goods_id=n; }
+		void   setName(string n) { name=n; }
+		void   setS_price(double n) { S_price=n; } 
+		void   setS_price() { cin>>S_price; }
+		void   setTotal_num(int n) { total_num+=n; }
+    	void   setTotal_num() { cin>>total_num; }           
+        void   setSales_volume(int n) { sales_volume+=n; }       
+        void   setUnit(string n) { unit=n; }                   
+		int    getGoods_id() { return goods_id; }
+		string getName() { return name; }
+		double getS_price() { return S_price; } 
+    	int    getTotal_num() { return total_num; }           
+        int    getSales_volume() { return sales_volume; }       
+        string getUnit() { return unit; }                      
+        
+}Goods[Max];
+int goods::total = 0;
+/*会员*/
+class vip{
+	private:
+        string name;                //姓名
+        string phone;              //手机号
+    public:
+    	void   setName() { cin>>name; }
+    	void   setPhone() { cin>>phone; }
+    	string getName() { return name; }
+    	string getPhone() { return phone; }
+}VIP[Max];
+
+static double asset=50000;     //资产 
+static int v=0;                //会员人数 
+
+void start_menu();             //开始菜单 
+void set_admin();              //创建管理员 
+void log_on();                 //登录
+void main_menu();              //主菜单    
+void in_();                    //商品入库
+void out_();                   //商品出库
+void set_goods_in(in_goods i); //货物汇总(in) 
+void set_goods_out(out_goods o);//货物汇总(out) 
+void find_();                  //查找货物 
+void find_1(int n);            //通过货号查找货物 
+void find_2(string s);         //通过名称查找货物 
+void change();                 //修改商品信息 
+void change_menu(int n);       //信息修改菜单
+void remove_out();             //下架商品 
+void inventory_verification(); //库存盘点 
+void asset_inventory(double n);//资产盘点 
+void vip_management_menu();    //会员管理菜单  
+void set_vip();                //会员注册    
+void vip_list();               //会员名单 
+ 
+void start_menu(){
+	cout<<"---开始菜单---"<<endl;
+	cout<<"1 管理员登陆"<<endl;
+	cout<<"2 创建管理员账户"<<endl;
+	cout<<"0 退出系统"<<endl;
+	cout<<"请输入你的选择：";
+	int n;
+	cin>>n;
+	switch(n){
+		case 1: log_on();
+		        break;
+		case 2: {
+			        set_admin();
+				    start_menu();
+			        break;
+		        }	        
+		case 0: {
+			      exit(0); 
+		          break;
+				} 
+	}	
+}
+
+static int ad=0;                //管理员人数 
+void set_admin(){
+	while(true){
+	    cout<<"---创建一个管理员账户---"<<endl;
+	    if(ad>=10){
+		    cout<<"管理员人数达到上限"<<endl;
+		    break;
+	    }
+		cout<<"请输入工号：";    Admin[ad].setAdmin_id();		
+		cout<<"请输入姓名：";    Admin[ad].setName();
+		cout<<"请设置密码：";    Admin[ad].setPwd();
+		cout<<"请输入手机号：";  Admin[ad].setPhone();
+	    ad++;
+		break;	
+	}	
+}
+
+void log_on(){
+		cout<<"---登录---"<<endl;
+	    string s1,s2;
+	    bool flag=false;
+	    static int i;
+	    cout<<"工号：";   
+	    cin>>s1;
+	    for(i=0;i<10;i++){
+	    	if(Admin[i].isAdmin_id(s1)){
+		    	flag=true;
+		    	break;
+			}
+		}		       
+	    if(flag){
+		    cout<<"密码：";
+		    cin>>s2;
+		    if(Admin[i].isPwd(s2)){
+		    	cout<<"登陆成功..."<<endl;
+		    	main_menu();
+			}		          
+	    	else{
+	    		cout<<"密码错误"<<endl; 
+	    		cout<<"按任意键返回开始菜单..."<<endl;
+				getch();
+	    		start_menu();
+			}         
+	    }
+	    else{
+	    	cout<<"该工号不存在"<<endl;
+	    	cout<<"按任意键返回开始菜单..."<<endl;
+			getch();
+	    	start_menu();
+		}	
+}
+
+void main_menu(){
+	cout<<"---主菜单---"<<endl;
+	cout<<"1 商品入库"<<endl;
+	cout<<"2 商品出库"<<endl;
+	cout<<"3 商品查询"<<endl;
+	cout<<"4 修改信息"<<endl;
+	cout<<"5 下架商品"<<endl;
+	cout<<"6 库存盘点"<<endl;
+	cout<<"7 资产盘点"<<endl;
+	cout<<"8 会员管理"<<endl;
+	cout<<"0 返回上一级"<<endl;
+	cout<<"请输入你的选择：";
+	int n;
+	cin>>n;
+	switch(n){
+		case 1: {
+			     in_();
+				 main_menu();
+				 break;			
+		        }		        
+		case 2: {
+			      out_();
+			      main_menu();
+			      break;
+		        }		        
+		case 3: {
+		          find_();
+				  main_menu();
+		          break;
+				}
+		case 4: {
+			      change();
+			      main_menu();
+			      break;
+		        }
+		case 5: remove_out();
+		        break;
+		case 6: inventory_verification();		        
+		        break;
+		case 7: {
+			      cout<<"您的资产余额为："<<asset<<"元"<<endl;
+			      cout<<"按任意键返回主菜单..."<<endl;
+		          getch();
+		          main_menu();
+				  break;
+		        }
+		case 8: vip_management_menu();
+		        break;
+		case 0:	start_menu(); 
+		        break;
+	} 
+} 
+
+void in_(){ 
+    cout<<"---商品入库---"<<endl;
+	cout<<"输入入库货物的货号:"; in_Goods.setGoods_id();
+	cout<<"输入入库货物的名称:"; in_Goods.setName();
+	cout<<"输入入库货物的入库数量:"; in_Goods.setIn_num();
+	cout<<"输入入库货物的入库日期(__年__月__日):"; in_Goods.setIn_date();
+	cout<<"输入入库货物的计量单位:"; in_Goods.setUnit();
+	cout<<"输入入库货物的进货单价:"; in_Goods.setP_price();
+	set_goods_in(in_Goods);	
+	double n=-in_Goods.getIn_num()*in_Goods.getP_price();
+	asset_inventory(n);	
+} 
+
+void out_(){
+	cout<<"---商品出库---"<<endl;
+	cout<<"输入出库货物的货号:"; out_Goods.setGoods_id();
+	cout<<"输入出库货物的名称:"; out_Goods.setName();
+	cout<<"输入出库货物的出库数量:"; out_Goods.setOut_num();
+	cout<<"输入出库货物的出库日期(__年__月__日):"; out_Goods.setOut_date();
+	cout<<"输入出库货物的出货单价:"; out_Goods.setS_price();	
+	set_goods_out(out_Goods);
+	double n=out_Goods.getOut_num()*out_Goods.getS_price();
+		cout<<"是否是会员？Y/N : ";
+	char s;
+	cin>>s; 
+	switch(s){
+		case 'Y': {
+			string s1;
+			cout<<"请输入手机号: ";
+			cin>>s1;
+			bool flag=false;
+			for(int i=0;i<v;i++){
+				if(VIP[i].getPhone()==s1)
+			     flag=true;
+			}
+			if(flag){
+				cout<<"95折"<<endl;
+		        n*=0.95;
+		        asset_inventory(n);
+			}
+			else {
+				cout<<"未查询到会员信息"<<endl;
+				cout<<"是否注册会员(500元入会)？ Y/N :";
+			    char s1;
+			    cin>>s1;
+			    switch(s1){
+				    case 'Y': {
+					    n=n*0.9+500;
+					    set_vip();
+					    break;
+				    }
+				case 'N': {asset_inventory(n);
+					          cout<<"按任意键返回主菜单..."<<endl;
+		                      getch();
+		                      main_menu();
+		                      break;}
+			    }
+			}
+			break;
+		}
+		case 'N': {
+			cout<<"是否注册会员(500元入会)？ Y/N :";
+			char s1;
+			cin>>s1;
+			switch(s1){
+				case 'Y': {
+					n=n*0.9+500;
+					asset_inventory(n);
+					set_vip();
+					break;
+				}
+				case 'N': {asset_inventory(n);
+					          cout<<"按任意键返回主菜单..."<<endl;
+		                      getch();
+		                      main_menu();
+		                      break;}
+			}
+			break;
+		}
+	} 
+} 
+
+void set_goods_in(in_goods i){
+	int n=i.getGoods_id();
+	Goods[n].setGoods_id(n);
+	Goods[n].setName(i.getName());	
+    Goods[n].setTotal_num(i.getIn_num());               
+    Goods[n].setUnit(i.getUnit());
+}
+
+void set_goods_out(out_goods o){
+	int n=o.getGoods_id();
+	Goods[n].setS_price(o.getS_price()); 
+	int num=-o.getOut_num();
+	Goods[n].setTotal_num(num);
+	Goods[n].setSales_volume(o.getOut_num());
+}
+
+void find_(){
+	int r;
+	cout<<"---查找货物---"<<endl;
+	cout<<"通过 1 货物名称  进行搜索\n     2 货号\n"; 
+	cout<<"输入你的选择：";
+	 cin>>r;
+	 switch(r)
+	 {
+	 	case 1:{string s;
+	 	cout<<"输入货物名称："; 
+	 		cin>>s;
+	 		find_2(s);
+			break;
+		 }
+		 case 2:{
+		 	int s;
+		 	cout<<"输入货号："; 
+		 	cin>>s;
+		 	find_1(s);
+			break;
+		 }
+		 default:{
+		 	cout<<"输入出错"; 
+		 	find_(); 
+			break;
+		 }
+	 }
+}
+void find_1(int n){
+	bool flag=false;
+	if(Goods[n].getGoods_id()!=0)
+		flag=true;
+	if (flag){  
+	cout<<"货号："<<Goods[n].getGoods_id()<<endl;
+	cout<<"货物名称："<<Goods[n].getName()<<endl;
+	cout<<"货物数量："<<Goods[n].getTotal_num()<<endl;
+	cout<<"货物计量单位："<<Goods[n].getUnit()<<endl;
+	cout<<"货物出库单价："<<Goods[n].getS_price()<<endl;
+	cout<<"货物销量："<<Goods[n].getSales_volume()<<endl;
+	}
+	else cout<<"查无此货\n";
+	 cout<<"下一步："<<endl;
+	 cout<<"1 返回主菜单"<<endl;
+	 cout<<"2 退出程序"<<endl;
+	 cin>>n;
+	 switch(n){
+	 	case 1:{main_menu();
+			    break;
+		       }
+		 case 2:{
+		 	exit(0);
+			break;
+		        }
+	 }
+	
+}
+void find_2(string s){
+	bool flag=false;
+	int i=0;
+	for( ; i<Max; i++){
+		if(Goods[i].getName()==s){
+			flag=true;
+			break;
+		}
+	}	
+	if (flag){
+	cout<<"货号："<<Goods[i].getGoods_id()<<endl;
+	cout<<"货物名称："<<Goods[i].getName()<<endl;
+	cout<<"货物数量："<<Goods[i].getTotal_num()<<endl;
+	cout<<"货物计量单位："<<Goods[i].getUnit()<<endl;
+	cout<<"货物出库单价："<<Goods[i].getS_price()<<endl;
+	cout<<"货物销量："<<Goods[i].getSales_volume()<<endl;
+	}
+	else cout<<"查无此货\n";
+	 cout<<"下一步："<<endl;
+	 cout<<"1 返回主菜单"<<endl;
+	 cout<<"2 退出程序"<<endl;
+	 int f;
+	 cin>>f;
+	 switch(f){
+	 	case 1:{main_menu();
+			break;
+		 }
+		 case 2:{
+		 exit(0);
+			break;
+		 }
+	 }
+}
+
+void change(){	
+		int n;
+	    cout<<"请输入想要修改的商品货号：";
+	    cin>>n;
+	    if(Goods[n].getGoods_id()==0){
+		    cout<<"仓库中没有该货号的商品"<<endl;
+		    cout<<"按任意键返回主菜单..."<<endl;
+		    getch();
+		    main_menu();
+	    }
+		else
+			change_menu(n);				 	    	
+} 
+void change_menu(int n){
+	cout<<"---商品信息修改菜单---"<<endl;
+	cout<<"1 修改商品售价"<<endl;
+	cout<<"2 修改商品数量"<<endl;
+	cout<<"0 返回上一级"<<endl;
+	cout<<"请输入你的选择：";
+	int m;
+	cin>>m;
+	switch(m){
+		case 1: { 
+		          cout<<"请输入修改后的价格：";
+			      Goods[n].setS_price();
+			      break;
+		        }
+    	case 2: {
+    		      cout<<"请输入修改后的数量：";
+    		      Goods[n].setTotal_num();
+			      break;
+	        	} 
+		case 0: break;
+	}
+}
+
+void remove_out(){
+	int n;
+	cout<<"输入想要下架的商品货号为：";
+	cin>>n; 
+	if(Goods[n].getGoods_id()==0){
+		    cout<<"仓库中没有该货号的商品"<<endl;
+		    cout<<"按任意键返回主菜单..."<<endl;
+		    getch();
+		    main_menu();
+	    }
+	else{
+	    cout<<"该货物货号："<<Goods[n].getGoods_id()<<endl;
+	    cout<<"该货物名称："<<Goods[n].getName()<<endl;
+	    cout<<"该货物数量："<<Goods[n].getTotal_num()<<endl;
+	    cout<<"该货物计量单位："<<Goods[n].getUnit()<<endl;
+    	cout<<"该货物出库单价："<<Goods[n].getS_price()<<endl;
+	    cout<<"该货物销量："<<Goods[n].getSales_volume()<<endl;
+	    cout<<endl;
+	    cout<<"是否确认下架该商品？（1 确认  0 取消）：";
+	    int m;
+	    cin>>m;
+	    switch(m){
+	    	case 1:{
+	    		Goods[n].setGoods_id(0);
+	    		Goods[n].setName("0");
+				cout<<"成功下架该商品..."<<endl;
+				cout<<"按任意键返回主菜单..."<<endl;
+				getch();
+				main_menu();
+				break;
+			}
+			case 0:{
+				cout<<"按任意键返回主菜单..."<<endl;
+				getch();
+				main_menu(); 
+				break;
+			}
+		}
+	}			
+} 
+
+void inventory_verification(){
+	cout<<" 货号 商品名称 销售单价 数量 销量 计量单位 "<<endl;
+	for(int i=0;i<Max;i++){
+		if(Goods[i].getGoods_id()!=0)
+		   cout<<Goods[i].getGoods_id()<<" "<<Goods[i].getName()<<" "<<Goods[i].getS_price()<<" "<<Goods[i].getTotal_num()<<" "<<Goods[i].getSales_volume()<<" "<<Goods[i].getUnit()<<endl;
+	}
+	cout<<"按任意键返回主菜单..."<<endl;
+	getch();
+	main_menu();
+}
+
+void asset_inventory(double n){
+	asset+=n;
+}
+
+void vip_management_menu(){
+	cout<<"---会员管理菜单---"<<endl;
+	cout<<"1 会员名单"<<endl;
+	cout<<"2 注册会员"<<endl;
+	cout<<"0 返回上一级"<<endl;
+	cout<<"请输入你的选择：";
+	int n;
+	cin>>n;
+	switch(n){
+		case 1: vip_list();
+			    break;
+		case 2: {
+			      set_vip();
+			      vip_management_menu();
+				  break;		
+		        }			    
+		case 0: main_menu();
+		        break;
+	}
+} 
+void set_vip(){	
+	while(true){
+	    cout<<"---注册一个会员---"<<endl;		
+		cout<<"请输入姓名：";    VIP[v].setName();
+		cout<<"请输入手机号：";  VIP[v].setPhone();
+	    v++;
+		break;	
+	}
+}
+void vip_list(){
+	cout<<"---会员名单---"<<endl;
+	cout<<" 姓名   电话号码"<<endl;
+	for(int i=0;i<v;i++)
+	    cout<<setw(5)<<VIP[i].getName()<<setw(15)<<VIP[i].getPhone()<<endl;
+	cout<<"按下任意键返回上一级..."<<endl;
+    getch();
+    vip_management_menu(); 
+}
+
+int main(){
+	start_menu();
+} 
