@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/new/prefix1">
+        <file>image/超市外部图.jpg</file>
+        <file>image/购物车简笔画.jpg</file>
+        <file>image/购物车图.jpg</file>
+        <file>image/顾客购物Q版形象.jpg</file>
+        <file>image/顾客购物图.jpg</file>
+        <file>image/会员图标.jpg</file>
+        <file>image/简笔画对话框.jpg</file>
+        <file>image/简笔画对话框2.jpg</file>
+        <file>image/卡通对话框.jpg</file>
+        <file>image/卡通对话框2.jpg</file>
+        <file>image/商品全局图.jpg</file>
+        <file>image/商品细节图.jpg</file>
+        <file>image/收银机形象图.jpg</file>
+        <file>image/收银界面图.jpg</file>
+        <file>image/收银员形象图.jpg</file>
+        <file>image/收银员形象图2.jpg</file>
+        <file>image/收银员与顾客对话图.jpg</file>
+        <file>image/小型超市外部图.jpg</file>
+        <file>image/4b3d56aabb229caeb81eaa104f7d0779.jpg</file>
+        <file>image/e67b324eae3c964506b73021aa3214ae.jpg</file>
+    </qresource>
+</RCC>
